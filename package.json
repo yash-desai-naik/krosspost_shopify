@@ -1,0 +1,42 @@
+{
+  "name": "krosspost-shopify",
+  "version": "1.0.0",
+  "description": "Instagram claims to Shopify draft orders app",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:seed": "tsx src/db/seed.ts"
+  },
+  "keywords": [
+    "shopify",
+    "instagram",
+    "claims",
+    "draft-orders"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@shopify/shopify-api": "^10.0.0",
+    "axios": "^1.6.7",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "express-session": "^1.18.0",
+    "ioredis": "^5.3.2",
+    "pg": "^8.11.3",
+    "redis": "^5.10.0",
+    "shopify": "^3.88.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/express-session": "^1.17.10",
+    "@types/node": "^20.11.16",
+    "@types/pg": "^8.11.0",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  }
+}
