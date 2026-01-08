@@ -1,18 +1,23 @@
 import axios from 'axios';
 import { config } from '../config';
 
-const GRAPH_API_BASE = 'https://graph.facebook.com/v21.0';
+const GRAPH_API_BASE = 'https://graph.instagram.com/v21.0';
 
 export async function sendInstagramDM(
-  accessToken: string,
+  igUserId: string,
   recipientId: string,
-  message: string
+  message: string,
+  accessToken: string
 ): Promise<void> {
   try {
-    console.log('📤 Sending Instagram DM to:', recipientId);
+    console.log('📤 Sending Instagram DM');
+    console.log('From IG User ID:', igUserId);
+    console.log('To Recipient ID:', recipientId);
+    
+    const url = `${GRAPH_API_BASE}/${igUserId}/messages`;
     
     const response = await axios.post(
-      `${GRAPH_API_BASE}/me/messages`,
+      url,
       {
         recipient: { id: recipientId },
         message: { text: message },

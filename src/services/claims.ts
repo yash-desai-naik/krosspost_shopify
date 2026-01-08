@@ -283,20 +283,41 @@ export async function processClaim(claimId: string): Promise<void> {
       holdTimeMinutes
     );
     
-    // Log checkout URL for manual sending (automated DM requires Facebook Page Access Token)
+    // Send automated Instagram DM
     const igUserId = claim.igUserId || (claim as any).ig_user_id;
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('✅ CHECKOUT URL READY');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📱 Instagram User:', igUserId);
-    console.log('🔗 Checkout URL:', checkoutUrl);
-    console.log('⏰ Expires in:', holdTimeMinutes, 'minutes');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('💡 Copy the URL above and send it manually via Instagram DM');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    const igAccessToken = shopWithToken.igAccessToken;
+    const igAccountId = (shop as any).ig_account_id || shop.igAccountId;
     
-    // Mark as reserved (not link_sent since we're not auto-sending)
-    await updateClaimStatus(claimId, ClaimStatus.RESERVED);
+    if (igAccessToken && igAccountId) {
+      try {
+        const message = `✅ Item reserved! Complete your purchase here: ${checkoutUrl}\n\n⏰ Link expires in ${holdTimeMinutes} minutes.`;
+        
+        await sendInstagramDM(
+          igAccountId,
+          igUserId,
+          message,
+          igAccessToken
+        );
+        
+        console.log('✅ Instagram DM sent successfully');
+        await updateClaimStatus(claimId, ClaimStatus.LINK_SENT);
+      } catch (error) {
+        console.error('Failed to send DM, but claim is still reserved:', error);
+        await updateClaimStatus(claimId, ClaimStatus.RESERVED);
+      }
+    } else {
+      // Fallback: Log checkout URL for manual sending
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('✅ CHECKOUT URL READY');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('📱 Instagram User:', igUserId);
+      console.log('🔗 Checkout URL:', checkoutUrl);
+      console.log('⏰ Expires in:', holdTimeMinutes, 'minutes');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('💡 Instagram not connected. Copy URL and send manually');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      await updateClaimStatus(claimId, ClaimStatus.RESERVED);
+    }
   });
 }
 
