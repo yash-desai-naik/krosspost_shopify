@@ -1,8 +1,8 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, IRouter } from 'express';
 import { getShopify, saveShop, getShop, deleteShop } from '../services/shopify';
 import { config } from '../config';
 
-const router = Router();
+const router: IRouter = Router();
 
 router.get('/auth/shopify', async (req: Request, res: Response) => {
   const shop = req.query.shop as string;

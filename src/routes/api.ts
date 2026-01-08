@@ -1,9 +1,9 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, IRouter } from 'express';
 import { query, queryOne } from '../db';
 import { Shop, Campaign, MappingRule, Claim } from '../types';
 import { updateShopIGConnection } from '../services/shopify';
 
-const router = Router();
+const router: IRouter = Router();
 
 router.get('/api/campaigns', async (req: Request, res: Response) => {
   try {
