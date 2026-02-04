@@ -1,24 +1,22 @@
-# Shopify App Configuration
-# This configuration file is used by the Shopify CLI to manage your app
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-scopes = "read_products,read_inventory,write_draft_orders,write_orders,read_customers,write_customers"
-
-# IMPORTANT: Update the APP_URL environment variable with your deployment URL before submitting
-# The webhooks will be automatically registered at the URLs below based on APP_URL
+client_id = "864ce86f2ce07226d15c1f7f611fb0b9"
+name = "Krosspost"
+application_url = "https://instakrosspost.onrender.com"
+embedded = true
 
 [webhooks]
-api_version = "2024-07"
+api_version = "2025-10"
 
-# Mandatory compliance webhooks for Shopify App Store
-# These webhooks handle GDPR/CPRA data requests and shop deletion
+  [[webhooks.subscriptions]]
+  topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+  uri = "/webhooks/shopify/customers/data_request"
 
-[[webhooks.subscriptions]]
-topics = ["customers/data_request", "customers/redact", "shop/redact"]
-uri = "https://instakrosspost.onrender.com/webhooks/shopify/customers/data_request"
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_customer_events,read_customers,write_draft_orders,read_draft_orders,read_inventory,read_orders,write_orders,read_products,customer_read_orders,customer_write_orders"
+optional_scopes = [ ]
+use_legacy_install_flow = false
 
-# NOTE: To register webhooks with Shopify:
-# 1. Update the URI above with your production domain
-# 2. Run: shopify app webhook trigger --topic customers/data_request
-# 3. Verify webhooks appear in Shopify Admin: Settings > Apps and integrations > Webhooks
-
-app_type = "public"
+[auth]
+redirect_urls = [ "https://instakrosspost.onrender.com/auth/shopify/callback" ]
