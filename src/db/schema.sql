@@ -103,3 +103,19 @@ CREATE TRIGGER update_campaigns_updated_at BEFORE UPDATE ON campaigns
 
 CREATE TRIGGER update_claims_updated_at BEFORE UPDATE ON claims
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Compliance requests table (audit trail for GDPR/CPRA requests)
+CREATE TABLE IF NOT EXISTS compliance_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  shop_id UUID NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
+  request_type VARCHAR(50) NOT NULL,
+  shopify_request_id VARCHAR(255) NOT NULL,
+  customer_email VARCHAR(255),
+  request_data JSONB NOT NULL,
+  processed_at TIMESTAMP,
+  notes TEXT,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_compliance_requests_shop_id ON compliance_requests(shop_id);
+CREATE INDEX idx_compliance_requests_request_type ON compliance_requests(request_type);
+CREATE INDEX idx_compliance_requests_created_at ON compliance_requests(created_at);

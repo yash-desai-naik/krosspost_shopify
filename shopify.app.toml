@@ -1,0 +1,22 @@
+# Shopify App Configuration
+# This configuration file is used by the Shopify CLI to manage your app
+
+scopes = "read_products,read_inventory,write_draft_orders,write_orders,read_customers,write_customers"
+
+[webhooks]
+api_version = "2024-07"
+
+# Mandatory compliance webhooks for Shopify App Store
+# These webhooks handle GDPR/CPRA data requests and shop deletion
+[[webhooks.subscriptions]]
+topics = ["customers/data_request", "customers/redact", "shop/redact"]
+uri = "https://{your-app-domain}/webhooks/shopify/customers/data_request"
+
+# Note: In development with localhost, you'll need to use ngrok or similar tunneling service
+# For local development:
+# 1. Install ngrok: https://ngrok.com/
+# 2. Run: ngrok http 3000
+# 3. Update the uri above with your ngrok URL
+
+# Optional: Additional app metadata
+app_type = "public"

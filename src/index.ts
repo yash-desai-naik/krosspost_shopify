@@ -4,6 +4,7 @@ import path from 'path';
 import { config, validateConfig } from './config';
 import { getPool } from './db';
 import shopifyAuthRoutes from './routes/shopify-auth';
+import shopifyWebhooksRoutes from './routes/shopify-webhooks';
 import instagramWebhookRoutes from './routes/instagram-webhooks';
 import instagramOAuthRoutes from './routes/instagram-oauth';
 import apiRoutes from './routes/api';
@@ -45,6 +46,7 @@ app.use(
 );
 
 app.use(shopifyAuthRoutes);
+app.use(shopifyWebhooksRoutes);
 app.use(instagramWebhookRoutes);
 app.use(instagramOAuthRoutes);
 app.use(apiRoutes);
@@ -78,6 +80,10 @@ async function start() {
     app.listen(config.app.port, () => {
       console.log(`✓ Server running on ${config.app.url}`);
       console.log(`  - Shopify OAuth: ${config.app.url}/auth/shopify`);
+      console.log(`  - Shopify Compliance Webhooks:`);
+      console.log(`    • customers/data_request: ${config.app.url}/webhooks/shopify/customers/data_request`);
+      console.log(`    • customers/redact: ${config.app.url}/webhooks/shopify/customers/redact`);
+      console.log(`    • shop/redact: ${config.app.url}/webhooks/shopify/shop/redact`);
       console.log(`  - Meta Webhooks: ${config.app.url}${config.meta.webhookPath}`);
     });
   } catch (error) {
