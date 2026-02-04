@@ -3,20 +3,22 @@
 
 scopes = "read_products,read_inventory,write_draft_orders,write_orders,read_customers,write_customers"
 
+# IMPORTANT: Update the APP_URL environment variable with your deployment URL before submitting
+# The webhooks will be automatically registered at the URLs below based on APP_URL
+
 [webhooks]
 api_version = "2024-07"
 
 # Mandatory compliance webhooks for Shopify App Store
 # These webhooks handle GDPR/CPRA data requests and shop deletion
+
 [[webhooks.subscriptions]]
 topics = ["customers/data_request", "customers/redact", "shop/redact"]
-uri = "https://{your-app-domain}/webhooks/shopify/customers/data_request"
+uri = "https://instakrosspost.onrender.com/webhooks/shopify/customers/data_request"
 
-# Note: In development with localhost, you'll need to use ngrok or similar tunneling service
-# For local development:
-# 1. Install ngrok: https://ngrok.com/
-# 2. Run: ngrok http 3000
-# 3. Update the uri above with your ngrok URL
+# NOTE: To register webhooks with Shopify:
+# 1. Update the URI above with your production domain
+# 2. Run: shopify app webhook trigger --topic customers/data_request
+# 3. Verify webhooks appear in Shopify Admin: Settings > Apps and integrations > Webhooks
 
-# Optional: Additional app metadata
 app_type = "public"
