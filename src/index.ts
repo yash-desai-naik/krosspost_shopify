@@ -80,6 +80,12 @@ app.post('/webhooks/shopify/customers/data_request', rawBodySaver, async (req, r
   }
 });
 
+// HEAD handler for customers/data_request (Shopify health checks)
+app.head('/webhooks/shopify/customers/data_request', (req, res) => {
+  console.log('🔵 HEAD: customers/data_request');
+  res.status(200).end();
+});
+
 // POST /webhooks/shopify/customers/redact
 app.post('/webhooks/shopify/customers/redact', rawBodySaver, async (req, res) => {
   console.log('🔵 HIT: customers/redact');
@@ -112,6 +118,12 @@ app.post('/webhooks/shopify/customers/redact', rawBodySaver, async (req, res) =>
   } catch (error) {
     res.status(200).json({ success: true });
   }
+});
+
+// HEAD handler for customers/redact
+app.head('/webhooks/shopify/customers/redact', (req, res) => {
+  console.log('🔵 HEAD: customers/redact');
+  res.status(200).end();
 });
 
 // POST /webhooks/shopify/shop/redact
@@ -148,6 +160,12 @@ app.post('/webhooks/shopify/shop/redact', rawBodySaver, async (req, res) => {
   } catch (error) {
     res.status(200).json({ success: true });
   }
+});
+
+// HEAD handler for shop/redact
+app.head('/webhooks/shopify/shop/redact', (req, res) => {
+  console.log('🔵 HEAD: shop/redact');
+  res.status(200).end();
 });
 
 // ============================================================================
