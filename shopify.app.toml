@@ -1,6 +1,6 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "864ce86f2ce07226d15c1f7f611fb0b9"
+client_id = "f4a62acb06de414abab7be68376ffd4e"
 name = "Krosspost"
 application_url = "https://instakrosspost.onrender.com"
 embedded = true
