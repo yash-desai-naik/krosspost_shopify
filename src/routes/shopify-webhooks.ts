@@ -1,34 +1,11 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import express from 'express';
 import crypto from 'crypto';
+import express from 'express';
 import { query, queryOne } from '../db';
 import { config } from '../config';
 import { Shop } from '../types';
 
-const router: Router = Router();
-/**
- * CRITICAL: Raw body parser middleware for HMAC verification
- * Must be applied BEFORE the main body parser in index.ts
- */
-function rawBodyParser(req: Request, res: Response, next: NextFunction) {
-  let data = '';
-  
-  req.on('data', (chunk) => {
-    data += chunk;
-  });
-  
-  req.on('end', () => {
-    (req as any).rawBody = data;
-    
-    try {
-      req.body = data ? JSON.parse(data) : {};
-    } catch (e) {
-      req.body = {};
-    }
-    
-    next();
-  });
-}
+const router : Router= Router();
 
 /**
  * Verify Shopify HMAC signature
@@ -55,9 +32,18 @@ function verifyShopifyWebhookHMAC(
 }
 
 /**
- * Middleware to verify Shopify webhook signatures
+ * Raw body capture middleware for HMAC verification
  */
-function verifyShopifyWebhook(req: Request, res: Response, next: NextFunction) {
+const captureRawBody = express.json({
+  verify: (req: any, res, buf, encoding) => {
+    req.rawBody = buf.toString('utf8');
+  }
+});
+
+/**
+ * HMAC verification middleware
+ */
+function verifyHMAC(req: Request, res: Response, next: NextFunction) {
   const hmacHeader = req.get('X-Shopify-Hmac-SHA256');
   
   if (!hmacHeader) {
@@ -65,31 +51,26 @@ function verifyShopifyWebhook(req: Request, res: Response, next: NextFunction) {
     return res.status(401).json({ error: 'Unauthorized: Missing HMAC header' });
   }
 
-  try {
-    const rawBody = (req as any).rawBody;
-    
-    if (!rawBody) {
-      console.error('❌ No raw body available for HMAC verification');
-      return res.status(401).json({ error: 'Unauthorized: Cannot verify HMAC' });
-    }
-    
-    const isValid = verifyShopifyWebhookHMAC(
-      rawBody,
-      hmacHeader,
-      config.shopify.apiSecret
-    );
-
-    if (!isValid) {
-      console.error('❌ Invalid HMAC signature');
-      return res.status(401).json({ error: 'Unauthorized: Invalid HMAC signature' });
-    }
-
-    console.log('✅ Valid HMAC signature verified');
-    next();
-  } catch (error) {
-    console.error('❌ HMAC verification error:', error);
-    return res.status(401).json({ error: 'Unauthorized: HMAC verification failed' });
+  const rawBody = (req as any).rawBody;
+  
+  if (!rawBody) {
+    console.error('❌ No raw body available for HMAC verification');
+    return res.status(401).json({ error: 'Unauthorized: Cannot verify HMAC' });
   }
+  
+  const isValid = verifyShopifyWebhookHMAC(
+    rawBody,
+    hmacHeader,
+    config.shopify.apiSecret
+  );
+
+  if (!isValid) {
+    console.error('❌ Invalid HMAC signature');
+    return res.status(401).json({ error: 'Unauthorized: Invalid HMAC signature' });
+  }
+
+  console.log('✅ Valid HMAC signature verified');
+  next();
 }
 
 /**
@@ -97,8 +78,8 @@ function verifyShopifyWebhook(req: Request, res: Response, next: NextFunction) {
  */
 router.post(
   '/webhooks/shopify/customers/data_request',
-  rawBodyParser,
-  verifyShopifyWebhook,
+  captureRawBody,
+  verifyHMAC,
   async (req: Request, res: Response) => {
     try {
       const { shop_id, shop_domain, customer, data_request } = req.body;
@@ -115,17 +96,17 @@ router.post(
         await query(
           `INSERT INTO compliance_requests (shop_id, request_type, shopify_request_id, customer_email, request_data)
            VALUES ($1, $2, $3, $4, $5)`,
-          [shop.id, 'data_request', data_request?.id, customer?.email, JSON.stringify(req.body)]
-        ).catch(() => {
-          console.log('Could not log compliance request');
+          [shop.id, 'data_request', data_request?.id || 'unknown', customer?.email || 'unknown', JSON.stringify(req.body)]
+        ).catch((err) => {
+          console.log('Could not log compliance request:', err.message);
         });
       }
 
       console.log('✅ Data request acknowledged');
-      res.status(200).json({ success: true });
+      res.status(200).json({ success: true, message: 'Data request received' });
     } catch (error: any) {
       console.error('❌ customers/data_request error:', error);
-      res.status(200).json({ success: true });
+      res.status(200).json({ success: true, message: 'Request acknowledged' });
     }
   }
 );
@@ -135,8 +116,8 @@ router.post(
  */
 router.post(
   '/webhooks/shopify/customers/redact',
-  rawBodyParser,
-  verifyShopifyWebhook,
+  captureRawBody,
+  verifyHMAC,
   async (req: Request, res: Response) => {
     try {
       const { shop_id, shop_domain, customer } = req.body;
@@ -153,24 +134,24 @@ router.post(
         await query(
           `INSERT INTO compliance_requests (shop_id, request_type, shopify_request_id, customer_email, request_data)
            VALUES ($1, $2, $3, $4, $5)`,
-          [shop.id, 'redact', `redact-${customer?.id}`, customer?.email, JSON.stringify(req.body)]
-        ).catch(() => {
-          console.log('Could not log compliance request');
+          [shop.id, 'redact', `redact-${customer?.id || 'unknown'}`, customer?.email || 'unknown', JSON.stringify(req.body)]
+        ).catch((err) => {
+          console.log('Could not log compliance request:', err.message);
         });
 
         await query(
           `DELETE FROM claims WHERE shop_id = $1 AND ig_user_id = $2`,
           [shop.id, customer?.id]
-        ).catch(() => {
-          console.log('Could not delete claims');
+        ).catch((err) => {
+          console.log('Could not delete claims:', err.message);
         });
       }
 
       console.log('✅ Customer data redacted');
-      res.status(200).json({ success: true });
+      res.status(200).json({ success: true, message: 'Redaction completed' });
     } catch (error: any) {
       console.error('❌ customers/redact error:', error);
-      res.status(200).json({ success: true });
+      res.status(200).json({ success: true, message: 'Request acknowledged' });
     }
   }
 );
@@ -180,8 +161,8 @@ router.post(
  */
 router.post(
   '/webhooks/shopify/shop/redact',
-  rawBodyParser,
-  verifyShopifyWebhook,
+  captureRawBody,
+  verifyHMAC,
   async (req: Request, res: Response) => {
     try {
       const { shop_id, shop_domain } = req.body;
@@ -199,8 +180,8 @@ router.post(
           `INSERT INTO compliance_requests (shop_id, request_type, shopify_request_id, customer_email, request_data)
            VALUES ($1, $2, $3, $4, $5)`,
           [shop.id, 'shop_redact', `shop-redact-${shop_id}`, 'shop@redaction', JSON.stringify(req.body)]
-        ).catch(() => {
-          console.log('Could not log compliance request');
+        ).catch((err) => {
+          console.log('Could not log compliance request:', err.message);
         });
 
         await query('DELETE FROM claims WHERE shop_id = $1', [shop.id]);
@@ -209,10 +190,10 @@ router.post(
       }
 
       console.log('✅ Shop data deleted');
-      res.status(200).json({ success: true });
+      res.status(200).json({ success: true, message: 'Shop deletion completed' });
     } catch (error: any) {
       console.error('❌ shop/redact error:', error);
-      res.status(200).json({ success: true });
+      res.status(200).json({ success: true, message: 'Request acknowledged' });
     }
   }
 );
