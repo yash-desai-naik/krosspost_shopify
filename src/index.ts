@@ -14,11 +14,15 @@ validateConfig();
 
 const app = express();
 
+// CRITICAL: Apply shopify webhooks BEFORE body parsing
+// Webhook routes handle raw body internally for HMAC verification
+app.use(shopifyWebhooksRoutes);
+
+// Now apply body parsing for all other routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Log all incoming requests
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
   if (req.path.includes('webhook')) {
@@ -46,7 +50,6 @@ app.use(
 );
 
 app.use(shopifyAuthRoutes);
-app.use(shopifyWebhooksRoutes);
 app.use(instagramWebhookRoutes);
 app.use(instagramOAuthRoutes);
 app.use(apiRoutes);
