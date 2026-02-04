@@ -38,7 +38,12 @@ router.get('/auth/shopify/callback', async (req: Request, res: Response) => {
     });
     
     const host = req.query.host as string;
-    const redirectUrl = `https://${session.shop}/admin/apps/${config.shopify.apiKey}`;
+    
+    if (!host) {
+      return res.redirect(`https://${session.shop}/admin/apps/${config.shopify.apiKey}`);
+    }
+    
+    const redirectUrl = `${config.app.url}/?shop=${session.shop}&host=${host}`;
     
     res.redirect(redirectUrl);
   } catch (error: any) {
