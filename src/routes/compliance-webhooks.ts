@@ -5,7 +5,7 @@ import { config } from '../config';
 import { query, queryOne } from '../db';
 import { Shop } from '../types';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * HMAC verification function
