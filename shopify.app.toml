@@ -8,12 +8,15 @@ embedded = true
 [webhooks]
 api_version = "2025-10"
 
-  [[webhooks.subscriptions]]
-  topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
-  uri = "/webhooks/shopify/customers/data_request"
+# Mandatory Compliance Webhooks (GDPR/CCPA)
+# These are required for App Store approval.
+[webhooks.compliance]
+customer_deletion_url = "https://instakrosspost.onrender.com/webhooks/shopify/customers/redact"
+customer_data_request_url = "https://instakrosspost.onrender.com/webhooks/shopify/customers/data_request"
+shop_deletion_url = "https://instakrosspost.onrender.com/webhooks/shopify/shop/redact"
 
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+# Your existing scopes for product, order, and customer management
 scopes = "read_customer_events,read_customers,write_draft_orders,read_draft_orders,read_inventory,read_orders,write_orders,read_products,customer_read_orders,customer_write_orders"
 optional_scopes = [ ]
 use_legacy_install_flow = false

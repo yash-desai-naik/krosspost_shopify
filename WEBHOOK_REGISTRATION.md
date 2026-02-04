@@ -26,19 +26,19 @@ Go to your Shopify Partner Dashboard:
 - **Topic**: `customers/data_request`
 - **URL**: `https://YOUR_DOMAIN/webhooks/shopify/customers/data_request`
 - **Format**: JSON
-- **API Version**: 2024-07
+- **API Version**: 2025-10
 
 #### Webhook 2: Customer Redaction
 - **Topic**: `customers/redact`
 - **URL**: `https://YOUR_DOMAIN/webhooks/shopify/customers/redact`
 - **Format**: JSON
-- **API Version**: 2024-07
+- **API Version**: 2025-10
 
 #### Webhook 3: Shop Redaction
 - **Topic**: `shop/redact`
 - **URL**: `https://YOUR_DOMAIN/webhooks/shopify/shop/redact`
 - **Format**: JSON
-- **API Version**: 2024-07
+- **API Version**: 2025-10
 
 ### Step 3: Verify Webhooks
 

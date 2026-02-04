@@ -36,7 +36,7 @@ If CLI doesn't work, register manually:
 Topic: customers/data_request
 URL: https://instakrosspost.onrender.com/webhooks/shopify/customers/data_request
 Format: JSON
-API Version: 2024-07
+API Version: 2025-10
 ```
 
 #### Webhook #2: Customer Redaction
@@ -44,7 +44,7 @@ API Version: 2024-07
 Topic: customers/redact
 URL: https://instakrosspost.onrender.com/webhooks/shopify/customers/redact
 Format: JSON
-API Version: 2024-07
+API Version: 2025-10
 ```
 
 #### Webhook #3: Shop Redaction
@@ -52,7 +52,7 @@ API Version: 2024-07
 Topic: shop/redact
 URL: https://instakrosspost.onrender.com/webhooks/shopify/shop/redact
 Format: JSON
-API Version: 2024-07
+API Version: 2025-10
 ```
 
 ---
