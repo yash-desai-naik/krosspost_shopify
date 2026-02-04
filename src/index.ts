@@ -31,8 +31,17 @@ function verifyShopifyHMAC(body: string, hmacHeader: string): boolean {
       .createHmac('sha256', config.shopify.apiSecret)
       .update(body, 'utf8')
       .digest('base64');
+    
+    console.log('HMAC Verification:', {
+      bodyLength: body.length,
+      generatedHmac: hmac.substring(0, 10) + '...',
+      receivedHmac: hmacHeader.substring(0, 10) + '...',
+      match: hmac === hmacHeader
+    });
+    
     return crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(hmacHeader));
-  } catch {
+  } catch (error) {
+    console.error('HMAC verification error:', error);
     return false;
   }
 }
