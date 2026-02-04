@@ -5,8 +5,7 @@ import { query, queryOne } from '../db';
 import { config } from '../config';
 import { Shop } from '../types';
 
-const router = Router();
-
+const router: Router = Router();
 /**
  * CRITICAL: Raw body parser middleware for HMAC verification
  * Must be applied BEFORE the main body parser in index.ts
