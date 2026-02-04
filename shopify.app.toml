@@ -14,7 +14,7 @@ use_legacy_install_flow = false
 redirect_urls = ["https://instakrosspost.onrender.com/auth/shopify/callback"]
 
 [webhooks]
-api_version = "2025-01"
+api_version = "2025-10"
 
 # GDPR/Privacy Compliance Endpoints
 customer_data_request_url = "https://instakrosspost.onrender.com/webhooks/shopify/customers/data_request"
