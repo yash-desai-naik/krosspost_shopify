@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { config, validateConfig } from './config';
 import { getPool, query, queryOne } from './db';
 import shopifyAuthRoutes from './routes/shopify-auth';
+import complianceWebhookRoutes from './routes/compliance-webhooks';
 import instagramWebhookRoutes from './routes/instagram-webhooks';
 import instagramOAuthRoutes from './routes/instagram-oauth';
 import apiRoutes from './routes/api';
@@ -22,9 +23,11 @@ app.use((req, res, next) => {
 });
 
 // ============================================================================
-// SHOPIFY COMPLIANCE WEBHOOKS - Inline registration for debugging
+// SHOPIFY COMPLIANCE WEBHOOKS - Now handled by compliance-webhooks.ts router
+// Old inline handlers commented out below (kept for reference)
 // ============================================================================
 
+/*
 function verifyShopifyHMAC(body: string, hmacHeader: string): boolean {
   try {
     const hmac = crypto
@@ -176,9 +179,10 @@ app.head('/webhooks/shopify/shop/redact', (req, res) => {
   console.log('🔵 HEAD: shop/redact');
   res.status(200).end();
 });
+*/
 
 // ============================================================================
-// END COMPLIANCE WEBHOOKS
+// END OLD COMPLIANCE WEBHOOKS (Now using compliance-webhooks.ts router)
 // ============================================================================
 
 // Body parsing for other routes
@@ -199,6 +203,7 @@ app.use(
   })
 );
 
+app.use(complianceWebhookRoutes);
 app.use(shopifyAuthRoutes);
 app.use(instagramWebhookRoutes);
 app.use(instagramOAuthRoutes);
