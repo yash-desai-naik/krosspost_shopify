@@ -12,6 +12,26 @@ const INSTAGRAM_OAUTH_URL = 'https://www.instagram.com/oauth/authorize';
 const INSTAGRAM_TOKEN_URL = 'https://api.instagram.com/oauth/access_token';
 const GRAPH_API_BASE = 'https://graph.instagram.com';
 
+router.get('/auth/instagram/url', async (req: Request, res: Response) => {
+  const shopDomain = req.query.shop as string;
+  
+  if (!shopDomain) {
+    return res.status(400).json({ error: 'Missing shop parameter' });
+  }
+  
+  const redirectUri = `${config.app.url}/auth/instagram/callback`;
+  const state = Buffer.from(JSON.stringify({ shop: shopDomain })).toString('base64');
+  
+  const authUrl = new URL(INSTAGRAM_OAUTH_URL);
+  authUrl.searchParams.set('client_id', config.meta.appId);
+  authUrl.searchParams.set('redirect_uri', redirectUri);
+  authUrl.searchParams.set('scope', 'instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments');
+  authUrl.searchParams.set('response_type', 'code');
+  authUrl.searchParams.set('state', state);
+  
+  res.json({ authUrl: authUrl.toString() });
+});
+
 router.get('/auth/instagram', async (req: Request, res: Response) => {
   const shopDomain = req.query.shop as string;
   
@@ -31,7 +51,22 @@ router.get('/auth/instagram', async (req: Request, res: Response) => {
   
   console.log('Instagram OAuth URL:', authUrl.toString());
   
-  res.redirect(authUrl.toString());
+  // Return HTML that opens Instagram OAuth in a new window to break out of Shopify iframe
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Instagram Connect</title>
+      </head>
+      <body>
+        <script>
+          window.opener.location.href = '${authUrl.toString()}';
+          window.close();
+        </script>
+        <p>Redirecting to Instagram... If you are not redirected, <a href="${authUrl.toString()}" target="_blank">click here</a></p>
+      </body>
+    </html>
+  `);
 });
 
 router.get('/auth/instagram/callback', async (req: Request, res: Response) => {
@@ -106,7 +141,29 @@ router.get('/auth/instagram/callback', async (req: Request, res: Response) => {
     await updateShopIGConnection(shopRecord.id, igBusinessAccountId, access_token);
     
     const successUrl = `${config.app.url}/?shop=${shop}&instagram_connected=true`;
-    res.redirect(successUrl);
+    
+    // Return HTML that closes the window and notifies parent iframe
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Instagram Connected</title>
+        </head>
+        <body>
+          <script>
+            if (window.opener) {
+              // Notify opener window about successful connection
+              window.opener.location.href = '${successUrl}';
+              window.close();
+            } else {
+              // Fallback if not opened as popup
+              window.location.href = '${successUrl}';
+            }
+          </script>
+          <p>Instagram connected successfully! Redirecting...</p>
+        </body>
+      </html>
+    `);
     
   } catch (error: any) {
     console.error('Instagram OAuth error:', error.response?.data || error.message);
